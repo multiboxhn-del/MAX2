@@ -1,5 +1,4 @@
 import Player from "./components/Player";
-import './App.css'; // Te recomiendo importar también un CSS para App
 
 export default function App() {
   return (
