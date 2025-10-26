@@ -1,31 +1,8 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#8A3D9C" />
-    <meta name="description" content="MAX RADIO - La mejor música en línea" />
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-    <title>MAX RADIO | En Vivo</title>
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png" />
-
-    <!-- Fuente opcional (puedes cambiarla si quieres otra) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Tailwind incluido desde el build -->
-  </head>
-
-  <body class="bg-black text-white font-inter">
-    <div id="root"></div>
-
-    <!-- React app entry -->
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+/* Estilos base opcionales */
+:root { color-scheme: dark; }
+html, body, #root { height: 100%; }
+body { @apply bg-black text-white antialiased; }
