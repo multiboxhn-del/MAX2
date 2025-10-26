@@ -4,13 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#8A3D9C" />
-    <title>MaxRadio</title>
+    <meta name="description" content="MAX RADIO - La mejor música en línea" />
+
+    <title>MAX RADIO | En Vivo</title>
+
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="robots" content="index, follow" />
+
+    <!-- Fuente opcional (puedes cambiarla si quieres otra) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind incluido desde el build -->
   </head>
-  <body>
+
+  <body class="bg-black text-white font-inter">
     <div id="root"></div>
+
+    <!-- React app entry -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
