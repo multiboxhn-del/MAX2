@@ -1,12 +1,7 @@
-import React from 'react';
-
-const Player = () => {
-    return (
-        <div>
-            <h2>Audio Player</h2>
-            {/* Add audio player controls here */}
-        </div>
-    );
-};
-
-export default Player;
+export default function App() {
+  return (
+    <div style={{padding: 24, fontSize: 24}}>
+      ✅ App cargó. Si ves este texto, el problema está en Player.jsx u otro componente.
+    </div>
+  );
+}
