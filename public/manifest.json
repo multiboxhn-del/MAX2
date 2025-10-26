@@ -1,0 +1,25 @@
+{
+  "name": "Max Radio Online",
+  "short_name": "MaxRadio",
+  "description": "Escucha la mejor música y programas en vivo con Max Radio, tu señal favorita online.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#8A3D9C",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}

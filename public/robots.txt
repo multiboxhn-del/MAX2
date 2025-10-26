@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://max-1-g4al.vercel.app/sitemap.xml
