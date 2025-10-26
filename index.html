@@ -1,25 +1,31 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#8A3D9C" />
-  <title>MaxRadio</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#8A3D9C" />
+    <meta name="description" content="MAX RADIO - La mejor música en línea" />
 
-  <!-- Icono y PWA -->
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="robots" content="index, follow" />
-</head>
+    <title>MAX RADIO | En Vivo</title>
 
-<!-- Solo debe haber UNA etiqueta <body> -->
-<body>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
-  <!-- Y solo UN <div id="root"> donde se pinta la app -->
-  <div id="root"></div>
+    <!-- Fuente opcional (puedes cambiarla si quieres otra) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- Esta línea carga la app de React. Debe estar DENTRO del body -->
-  <script type="module" src="/src/main.jsx"></script>
-  
-</body>
+    <!-- Tailwind incluido desde el build -->
+  </head>
+
+  <body class="bg-black text-white font-inter">
+    <div id="root"></div>
+
+    <!-- React app entry -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
