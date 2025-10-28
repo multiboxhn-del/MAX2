@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">maxradio</string>
+    <string name="title_activity_main">maxradio</string>
+    <string name="package_name">com.multibox.maxradio</string>
+    <string name="custom_url_scheme">com.multibox.maxradio</string>
+</resources>
