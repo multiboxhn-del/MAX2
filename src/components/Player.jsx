@@ -47,6 +47,29 @@ export default function OnlineRadioPlayer({
     setTimeout(() => setToastVisible(false), 2500);
   }, []);
 
+  // --- 1. NUEVO: Función para actualizar la Media Session ---
+  const updateMediaSession = useCallback(
+    (title, artist) => {
+      if (!("mediaSession" in navigator)) {
+        return;
+      }
+
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: title || "Reproduciendo",
+        artist: artist || stationName,
+        album: stationName,
+        artwork: [
+          {
+            src: coverFallback, // Esta URL debe ser HTTPS
+            sizes: "512x512",
+            type: "image/png",
+          },
+        ],
+      });
+    },
+    [stationName, coverFallback] // Dependencias
+  );
+
   // Restaurar volumen
   useEffect(() => {
     const saved = localStorage.getItem(VOLUME_KEY);
@@ -153,6 +176,11 @@ export default function OnlineRadioPlayer({
       if (window.cordova?.plugins?.backgroundMode) {
         window.cordova.plugins.backgroundMode.disable();
       }
+
+      // --- NUEVO: Actualizar estado Media Session ---
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+      }
     } else {
       try {
         setBuffering(true);
@@ -180,13 +208,20 @@ export default function OnlineRadioPlayer({
         await audio.play();
         setIsPlaying(true);
         localStorage.setItem(AUTOPLAY_KEY, "1");
+
+        // --- NUEVO: Llamar a Media Session al dar play ---
+        const currentTitle = nowPlaying || "Conéctate con la mejor música";
+        updateMediaSession(currentTitle, stationName);
+        if ("mediaSession" in navigator) {
+          navigator.mediaSession.playbackState = "playing";
+        }
       } catch (err) {
         setError("No se pudo iniciar la reproducción. Da clic de nuevo.");
       } finally {
         setBuffering(false);
       }
     }
-  }, [isPlaying, stationName]); // CORRECCIÓN: Añadida stationName
+  }, [isPlaying, stationName, nowPlaying, updateMediaSession]); // --- NUEVO: Dependencias añadidas ---
 
   const toggleMute = useCallback(() => setIsMuted((m) => !m), []);
 
@@ -231,7 +266,13 @@ export default function OnlineRadioPlayer({
           ? data.icestats.source[0]
           : data?.icestats?.source;
         const np = source?.title || source?.stream_title || "";
-        if (np) setNowPlaying(np);
+        if (np) {
+          setNowPlaying(np);
+          // --- NUEVO: Actualizar Media Session si está sonando ---
+          if (isPlaying) {
+            updateMediaSession(np, stationName);
+          }
+        }
       } catch (err) {
         // 3. MEJORA: Añadido console.error para depuración
         console.error("Error fetching radio metadata:", err);
@@ -240,7 +281,7 @@ export default function OnlineRadioPlayer({
     fetchMeta();
     const id = setInterval(fetchMeta, 20000);
     return () => clearInterval(id);
-  }, [statusUrl]);
+  }, [statusUrl, isPlaying, stationName, updateMediaSession]); // --- NUEVO: Dependencias añadidas ---
 
   // Eventos del <audio> (envueltos en useCallback)
   const onWaiting = useCallback(() => setBuffering(true), []);
@@ -258,6 +299,31 @@ export default function OnlineRadioPlayer({
     setError("Se perdió la conexión con el stream. Reintentando…");
     scheduleRetry();
   }, [scheduleRetry]);
+
+  // --- 2. NUEVO: Handlers para la Media Session ---
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) {
+      return;
+    }
+
+    // Conectar botones de notificación a tu función togglePlay
+    navigator.mediaSession.setActionHandler("play", () => {
+      if (!isPlaying) togglePlay();
+    });
+    navigator.mediaSession.setActionHandler("pause", () => {
+      if (isPlaying) togglePlay();
+    });
+    navigator.mediaSession.setActionHandler("stop", () => {
+      if (isPlaying) togglePlay();
+    });
+
+    // Limpiar al desmontar
+    return () => {
+      navigator.mediaSession.setActionHandler("play", null);
+      navigator.mediaSession.setActionHandler("pause", null);
+      navigator.mediaSession.setActionHandler("stop", null);
+    };
+  }, [togglePlay, isPlaying]); // Dependencias
 
   // 5. NUEVO: Atajos de teclado
   useEffect(() => {
@@ -543,7 +609,7 @@ export default function OnlineRadioPlayer({
               <div className="h-10 w-10 rounded-xl overflow-hidden bg-zinc-700 flex items-center justify-center">
                 {/* 2. MEJORA: Usar coverUrl por consistencia */}
                 <img
-                  src={coverUrl || undefined}
+                  coverFallback = "https://eslamax.com/wp-content/uploads/2025/10/assets_task_01jrc4fjmnfada22arvxc7p3s8_img_0.webp",
                   alt="cover"
                   className="h-full w-full object-cover"
                 />
