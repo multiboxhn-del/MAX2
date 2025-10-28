@@ -120,22 +120,10 @@ export default function OnlineRadioPlayer({
         window.cordova.plugins &&
         window.cordova.plugins.backgroundMode
       ) {
-        console.log("Configurando modo segundo plano...");
+        // CORRECCIÓN: Lógica movida a togglePlay
+        console.log("Listeners de modo segundo plano listos.");
 
-        window.cordova.plugins.backgroundMode.enable();
-        try {
-          window.cordova.plugins.backgroundMode.disableBatteryOptimizations();
-        } catch {}
-
-        window.cordova.plugins.backgroundMode.setDefaults({
-          title: stationName,
-          text: "Escuchando la radio en vivo.",
-          isMedia: true,
-          icon: "res://mipmap/ic_launcher",
-          hidden: false,
-          resume: true,
-        });
-
+        // CORRECCIÓN: Solo dejamos los listeners
         window.cordova.plugins.backgroundMode.on("activate", () => {
           if (audioRef.current) audioRef.current.play().catch(() => {});
         });
@@ -149,7 +137,7 @@ export default function OnlineRadioPlayer({
     return () => {
       document.removeEventListener("deviceready", onDeviceReady, false);
     };
-  }, [stationName]);
+  }, []); // CORRECCIÓN: Dependencia [stationName] ya no es necesaria aquí
 
   // Controles (envueltos en useCallback para los atajos de teclado)
   const togglePlay = useCallback(async () => {
@@ -160,9 +148,35 @@ export default function OnlineRadioPlayer({
       audio.pause();
       setIsPlaying(false);
       localStorage.removeItem(AUTOPLAY_KEY);
+
+      // CORRECCIÓN: Desactivar modo segundo plano al pausar
+      if (window.cordova?.plugins?.backgroundMode) {
+        window.cordova.plugins.backgroundMode.disable();
+      }
     } else {
       try {
         setBuffering(true);
+
+        // CORRECCIÓN: Activar modo segundo plano al dar play
+        if (window.cordova?.plugins?.backgroundMode) {
+          console.log("Activando modo segundo plano...");
+          window.cordova.plugins.backgroundMode.setDefaults({
+            title: stationName,
+            text: "Escuchando la radio en vivo.",
+            isMedia: true,
+            icon: "res://mipmap/ic_launcher",
+            hidden: false,
+            resume: true,
+          });
+          try {
+            window.cordova.plugins.backgroundMode.disableBatteryOptimizations();
+          } catch (e) {
+            console.warn("No se pudo deshabilitar optimización de batería", e);
+          }
+          window.cordova.plugins.backgroundMode.enable();
+        }
+        // --- FIN CORRECCIÓN ---
+
         await audio.play();
         setIsPlaying(true);
         localStorage.setItem(AUTOPLAY_KEY, "1");
@@ -172,7 +186,7 @@ export default function OnlineRadioPlayer({
         setBuffering(false);
       }
     }
-  }, [isPlaying]);
+  }, [isPlaying, stationName]); // CORRECCIÓN: Añadida stationName
 
   const toggleMute = useCallback(() => setIsMuted((m) => !m), []);
 
@@ -230,7 +244,7 @@ export default function OnlineRadioPlayer({
 
   // Eventos del <audio> (envueltos en useCallback)
   const onWaiting = useCallback(() => setBuffering(true), []);
-  
+
   const onPlaying = useCallback(() => {
     setBuffering(false);
     setIsPlaying(true);
@@ -249,7 +263,11 @@ export default function OnlineRadioPlayer({
   useEffect(() => {
     const handleKeydown = (e) => {
       // No activar atajos si se está escribiendo en un input
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) {
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.isContentEditable
+      ) {
         return;
       }
 
@@ -281,8 +299,16 @@ export default function OnlineRadioPlayer({
   }, [volume, togglePlay, toggleMute, setVol]);
 
   const volumeIcon =
-    isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />;
-  const playIcon = isPlaying ? <Pause className="h-7 w-7" /> : <Play className="h-7 w-7" />;
+    isMuted || volume === 0 ? (
+      <VolumeX className="h-5 w-5" />
+    ) : (
+      <Volume2 className="h-5 w-5" />
+    );
+  const playIcon = isPlaying ? (
+    <Pause className="h-7 w-7" />
+  ) : (
+    <Play className="h-7 w-7" />
+  );
 
   return (
     <div
@@ -290,9 +316,7 @@ export default function OnlineRadioPlayer({
       // 1. MEJORA: Aplicar themeColor como variable CSS
       style={{ "--theme-color": themeColor }}
     >
-      <div
-        className="relative rounded-2xl bg-gradient-to-br from-[var(--theme-color)] via-[#0E0E0E] to-[#0E0E0E] text-white shadow-2xl overflow-hidden"
-      >
+      <div className="relative rounded-2xl bg-gradient-to-br from-[var(--theme-color)] via-[#0E0E0E] to-[#0E0E0E] text-white shadow-2xl overflow-hidden">
         {/* Encabezado */}
         <div className="flex items-center gap-3 p-4 border-b border-white/10">
           <div
@@ -300,7 +324,11 @@ export default function OnlineRadioPlayer({
               isPlaying ? "ring-2 ring-[#F6C400] animate-pulse" : ""
             }`}
           >
-            <img src={coverUrl} alt="logo" className="h-full w-full object-cover" />
+            <img
+              src={coverUrl}
+              alt="logo"
+              className="h-full w-full object-cover"
+            />
             {buffering && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -308,9 +336,16 @@ export default function OnlineRadioPlayer({
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs uppercase tracking-widest text-[#F6C400]/90">En vivo</p>
-            <h2 className="text-lg md:text-xl font-semibold truncate">{stationName}</h2>
-            <p className="text-sm md:text-base text-zinc-300 truncate" title={nowPlaying}>
+            <p className="text-xs uppercase tracking-widest text-[#F6C400]/90">
+              En vivo
+            </p>
+            <h2 className="text-lg md:text-xl font-semibold truncate">
+              {stationName}
+            </h2>
+            <p
+              className="text-sm md:text-base text-zinc-300 truncate"
+              title={nowPlaying}
+            >
               {nowPlaying || "Conéctate con la mejor música"}
             </p>
           </div>
@@ -347,7 +382,11 @@ export default function OnlineRadioPlayer({
             className="h-12 w-12 rounded-full bg-[#F6C400] hover:bg-[#FFD633] text-black grid place-items-center shadow-lg active:scale-95 transition"
             aria-label={isPlaying ? "Pausar" : "Reproducir"}
           >
-            {buffering ? <Loader2 className="h-6 w-6 animate-spin" /> : playIcon}
+            {buffering ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              playIcon
+            )}
           </button>
 
           <div className="flex items-center gap-2 ml-2">
@@ -406,7 +445,9 @@ export default function OnlineRadioPlayer({
 
         {/* Redes sociales */}
         <div className="px-4 pb-2 flex items-center gap-2 text-zinc-300">
-          <span className="text-xs uppercase tracking-widest mr-1">Síguenos</span>
+          <span className="text-xs uppercase tracking-widest mr-1">
+            Síguenos
+          </span>
           <a
             href={socialLinks?.tiktok}
             target="_blank"
@@ -414,7 +455,12 @@ export default function OnlineRadioPlayer({
             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
             aria-label="TikTok"
           >
-            <svg viewBox="0 0 48 48" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+            <svg
+              viewBox="0 0 48 48"
+              className="h-5 w-5"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path d="M41 17.2c-3.8-.8-7-3.1-9-6.3V31c0 7.5-6.1 13.6-13.6 13.6S4.8 38.5 4.8 31 10.9 17.4 18.4 17.4c1.3 0 2.6.2 3.8.6v6a7.7 7.7 0 0 0-3.8-1c-4.2 0-7.6 3.4-7.6 7.6s3.4 7.6 7.6 7.6 7.6-3.4 7.6-7.6V2h6.2c1.3 4.7 5.3 8.3 10.2 9.1V17.2z" />
             </svg>
           </a>
@@ -447,7 +493,12 @@ export default function OnlineRadioPlayer({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium shadow-md transition-transform active:scale-95"
             aria-label="Apoyar con PayPal"
           >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-4 w-4"
+              aria-hidden="true"
+            >
               <path d="M12 2C6.5 2 2 6.4 2 11.9S6.5 21.8 12 21.8 22 17.4 22 11.9 17.5 2 12 2zm.7 8.3c-.4 1.4-1.7 2.3-3.1 2.3H9.2l-.7 3.4H7.4l1.2-6H10c.7 0 1.4-.5 1.5-1.2.1-.4 0-.8-.2-1-.3-.3-.8-.4-1.3-.4H8.3l.3-1.3h1.6c.9 0 1.8.3 2.4 1 .4.5.6 1.2.4 1.9z" />
             </svg>
             Apoyar
@@ -491,12 +542,21 @@ export default function OnlineRadioPlayer({
             <div className="flex items-center gap-3 px-3 py-2">
               <div className="h-10 w-10 rounded-xl overflow-hidden bg-zinc-700 flex items-center justify-center">
                 {/* 2. MEJORA: Usar coverUrl por consistencia */}
-                <img src={coverUrl || undefined} alt="cover" className="h-full w-full object-cover" />
+                <img
+                  src={coverUrl || undefined}
+                  alt="cover"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-widest text-[#F6C400]/90">En vivo</p>
+                <p className="text-[10px] uppercase tracking-widest text-[#F6C400]/90">
+                  En vivo
+                </p>
                 <p className="text-sm font-semibold truncate">{stationName}</p>
-                <p className="text-xs text-zinc-400 truncate" title={nowPlaying || ""}>
+                <p
+                  className="text-xs text-zinc-400 truncate"
+                  title={nowPlaying || ""}
+                >
                   {nowPlaying || "Reproduciendo..."}
                 </p>
               </div>
