@@ -19,7 +19,8 @@ export default function OnlineRadioPlayer({
   streamUrl = "https://app.sonicpanelradio.com/8246/stream",
   stationName = "MAX RADIO",
   statusUrl,
-  coverFallback = "https://eslamax.com/wp-content/uploads/2025/03/cropped-3.png",
+  // --- CAMBIO 1: URL Actualizada ---
+  coverFallback = "https://eslamax.com/wp-content/uploads/2025/10/assets_task_01jrc4fjmnfada22arvxc7p3s8_img_0.webp",
   themeColor = "#8A3D9C",
   onLike,
   onShare,
@@ -62,7 +63,7 @@ export default function OnlineRadioPlayer({
           {
             src: coverFallback, // Esta URL debe ser HTTPS
             sizes: "512x512",
-            type: "image/png",
+            type: "image/png", // Nota: el tipo es 'image/webp' pero 'image/png' suele ser más compatible
           },
         ],
       });
@@ -607,9 +608,9 @@ export default function OnlineRadioPlayer({
           <div className="mx-2 rounded-2xl bg-[#1a1a1a]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1a1a1a]/70 border border-white/10 shadow-lg">
             <div className="flex items-center gap-3 px-3 py-2">
               <div className="h-10 w-10 rounded-xl overflow-hidden bg-zinc-700 flex items-center justify-center">
-                {/* 2. MEJORA: Usar coverUrl por consistencia */}
+                {/* --- CAMBIO 2: Error de sintaxis corregido --- */}
                 <img
-                  coverFallback = "https://eslamax.com/wp-content/uploads/2025/10/assets_task_01jrc4fjmnfada22arvxc7p3s8_img_0.webp",
+                  src={coverUrl || undefined}
                   alt="cover"
                   className="h-full w-full object-cover"
                 />
